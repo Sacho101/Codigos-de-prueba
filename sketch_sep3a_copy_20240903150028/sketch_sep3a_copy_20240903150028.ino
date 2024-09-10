@@ -1,254 +1,266 @@
-//Grupo 1 Eitan Cherniak, Eitan Grodniensky, Martin Feierman Y Alan Tejblum
-#include <Arduino.h>
-#include <WiFi.h>
-#include <Firebase_ESP_Client.h>
-#include <Wire.h>
-#include <U8g2lib.h>
-#include <DHT.h>
-#include <Adafruit_Sensor.h>
+//codigo pantalla i2c
+/* 
+ #include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
 
-// Pines
-#define BOT1 35
-#define BOT2 34
-#define SENSOR_TEMP 23
-#define LED 25
-
-// Variables
-int umb;
-float temp;
-unsigned long Time = 0;
-int Intervalo;
-int Intervalito;
-
-int Maquina;
-
-DHT dht(SENSOR_TEMP, DHT11);
-U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
-#define  Modo1 1
-#define Intervalo1 2
-#define Modo2 3
-#define Subir 4
-#define Bajar 5
-#define Intervalo2 6
-
-
-// Provide the token generation process info.
-#include "addons/TokenHelper.h"
-// Provide the RTDB payload printing info and other helper functions.
-#include "addons/RTDBHelper.h"
-
-// Insert your network credentials
-#define WIFI_SSID "ORT-IoT"
-#define WIFI_PASSWORD "OrtIOT24"
-
-// Insert Firebase project API Key
-#define API_KEY "AIzaSyAOp9NLfppQOqJG8q1CpFkm2D2L2eGLdEI"
-
-// Insert Authorized Email and Corresponding Password
-#define USER_EMAIL "matischatzyki@gmail.com"
-#define USER_PASSWORD "Sacho101"
-
-// Insert RTDB URL
-#define DATABASE_URL "https://tp-firebase-5a936-default-rtdb.firebaseio.com/"
-
-// Define Firebase objects
-FirebaseData fbdo;
-FirebaseAuth auth;
-FirebaseConfig config;
-
-// Variable to save USER UID
-String uid;
-
-// Database main path (to be updated in setup with the user UID)
-String databasePath;
-// Database child nodes
-String tempPath = "/temperature";
-
-
-// Parent Node (to be updated in every loop)
-String parentPath;
-
-int Tiemposubida;
-FirebaseJson json;
-
-const char* ntpServer = "pool.ntp.org";
-
-unsigned long PrevMillis = 0;
-unsigned long timerDelay = 180000;
-
-void Modo1WiFi() { //cambiar
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println(WiFi.localIP());
-  Serial.println();
-}
-
-// Function that gets current epoch time
-unsigned long ObtenerTiempo() {
-  time_t now;
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("error con el tiempo");
-    return 0;
-  }
-  time(&now);
-  return now;
-}
+//Crear el objeto lcd  dirección  0x3F y 16 columnas x 2 filas
+LiquidCrystal_I2C lcd(0x3F,16,2);  //
 
 void setup() {
-  Serial.begin(115200);
-  Modo1WiFi();
-  configTime(0, 0, ntpServer);
-
-  // Assign the API key (required)
-  config.api_key = API_KEY;
-
-  // Assign the user sign-in credentials
-  auth.user.email = USER_EMAIL;
-  auth.user.password = USER_PASSWORD;
-
-  // Assign the RTDB URL (required)
-  config.database_url = DATABASE_URL;
-
-  Firebase.reconnectWiFi(true);
-  fbdo.setResponseSize(4096);
-
-  // Assign the callback function for the long-running token generation task
-  config.token_status_callback = tokenStatusCallback;  // see addons/TokenHelper.h
-
-  // Assign the maximum retry of token generation
-  config.max_token_generation_retry = 5;
-
-  // Modo1ialize the library with the Firebase authentication and config
-  Firebase.begin(&config, &auth);
-
-  // Getting the user UID might take a few seconds
-  Serial.println("Getting User UID");
-  while ((auth.token.uid) == "") {
-    Serial.print('.');
-    delay(1000);
-  }
-  // Print user UID
-  uid = auth.token.uid.c_str();
-  Serial.print("User UID: ");
-  Serial.println(uid);
-
-  // Update database path
-  databasePath = "/UsersData/" + uid + "/readings";
-
-  // Modo1ial setup
-  Intervalo = 30000;
-  pinMode(BOT1, INPUT_PULLUP);
-  pinMode(BOT2, INPUT_PULLUP);
-  u8g2.begin();
-  dht.begin();
-  Maquina = Modo1;
+  // Inicializar el LCD
+  lcd.init();
+  
+  //Encender la luz de fondo.
+  lcd.backlight();
+  
+  // Escribimos el Mensaje en el LCD.
+  lcd.print("Hola Mundo");
 }
 
 void loop() {
-  Serial.println(millis() - PrevMillis);
-  Intervalito = Intervalo / 1000;
-
-  if (Firebase.ready() && (millis() - PrevMillis > Intervalo || PrevMillis == 0)) {
-    PrevMillis = millis();
-
-    // Get current Tiemposubida
-    Tiemposubida = ObtenerTiempo();
-    Serial.print("time: ");
-    Serial.println(Tiemposubida);
-
-    parentPath = databasePath + "/" + String(Tiemposubida);
+   // Ubicamos el cursor en la primera posición(columna:0) de la segunda línea(fila:1)
+  lcd.setCursor(0, 1);
+   // Escribimos el número de segundos trascurridos
+  lcd.print(millis()/1000);
+  lcd.print(" Segundos");
+}
+*/
 
 
-    json.set(tempPath.c_str(), dht.readTemperature());
-    Firebase.RTDB.setJSON(&fbdo, parentPath.c_str(), &json);
-  }
 
-  switch (Maquina) {
-    case Modo1:
-      Pantalla_Modo1();
-      if (digitalRead(BOT1) == LOW && digitalRead(BOT2) == LOW)
-        Maquina = Intervalo1;
-      break;
-    case Intervalo1:
-      Pantalla_Modo1();
-      if (digitalRead(BOT1) == HIGH && digitalRead(BOT2) == HIGH) {
-        Maquina = Modo2;
-      }
-      break;
-    case Modo2:
-      Pantalla_Tiempo();
-      if (digitalRead(BOT1) == LOW) {
-        Maquina = Subir;
-      }
-      if (digitalRead(BOT2) == LOW) {
-        Maquina = Bajar;
-      }
-      if (digitalRead(BOT1) == LOW && digitalRead(BOT2) == LOW) {
-        Maquina = Intervalo2;
-      }
 
-      break;
-    case Subir:
-      Pantalla_Tiempo();
-      if (digitalRead(BOT1) == HIGH) {
-        Intervalo = Intervalo + 30000;
-        Maquina = Modo2;
-      }
-      if (digitalRead(BOT1) == LOW && digitalRead(BOT2) == LOW) {
-        Maquina = Intervalo2;
-      }
-      break;
-    case Bajar:
-      Pantalla_Tiempo();
-      if (digitalRead(BOT2) == HIGH) {
-        Maquina = Modo2;
-        if (Intervalo   > 30000) {
-          Intervalo = Intervalo - 30000;
-        }
-      }
+//AHT10
 
-      if (digitalRead(BOT1) == LOW && digitalRead(BOT2) == LOW) {
-        Maquina = Intervalo2;
-      }
-      break;
-    case Intervalo2:
-      Pantalla_Tiempo();
-      if (digitalRead(BOT1) == HIGH && digitalRead(BOT2) == HIGH) {
-        Maquina = Modo1;
-      }
-      break;
-  }
+/*
+//Se declaran las librerías 
+#include <Wire.h> // Librería para establecer comunicación I2C
+#include <AHT10.h> // Librería para utilizar el sensor AHT10
+
+AHT10 myAHT10(0x38);
+
+void setup() {
+Wire.begin(); // Función que inicializa la librería Wire
+Serial.begin(9600); //Se inicia la comunicación serial 
+Serial.println("AHT10"); // Se imprime el nombre de sensor
+if (!myAHT10.begin()) { // Si la comunicación con el sensor falla se imprime el un mensaje de error 
+Serial.println("Error no se el sensor!");
+while (1);
+}
 }
 
-void Pantalla_Tiempo() {
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.setCursor(18, 30);
-  u8g2.print(Intervalito);
-  u8g2.drawStr(55, 30, "Time");
-  u8g2.drawStr(15, 50, "-");
-  u8g2.drawStr(100, 50, "+");
+void loop() {
+float temp = myAHT10.readTemperature(); //Se lee la temperatura y se asigna "tem"
+float hum = myAHT10.readHumidity(); //Se lee humedad y se asigna "hum" 
+Serial.print("Temp: "); Serial.print(temp); Serial.print(" °C"); //Se imprime el valor de tempertura 
+Serial.print("tt"); // Imprime dos pestañas para acomodar los valores de temperatura y humedad
+Serial.print("Humidity: "); Serial.print(hum); Serial.println(" %"); //Se imprime el valor de humedad
+delay(1000);
+}
+*/
 
-  u8g2.sendBuffer();
+
+
+// sensor magnetico
+
+
+
+/*
+//declaramos las variables
+int Led=13;       //pin del led
+int pin_digital = 7//pin de señal de sensor
+;int  val;//variable para almacenar un valor
+void  setup()
+{
+pinMode(Led,OUTPUT);//define LED como salida
+pinMode(pin_digital = 7,INPUT);//define señal sensor como entrada
+}
+void  loop()
+
+{ val=digitalRead(pin_digital = 7);//lee el valor de la entrada digital
+if(val==HIGH)//Cuando el sensor detecta campo
+{
+Serial.println("ENCENDIDO");
+}
+else        
+{
+Serial.println("APAGADO");
+}
+}
+*/
+
+
+//LED guiño
+/*
+
+#define ledPIN  9
+ 
+void setup() {
+  Serial.begin(9600);    //iniciar puerto serie
+  pinMode(ledPIN , OUTPUT);  //definir pin como salida
+}
+ 
+void loop(){
+  digitalWrite(ledPIN , HIGH);   // poner el Pin en HIGH
+  delay(1000);                   // esperar un segundo
+  digitalWrite(ledPIN , LOW);    // poner el Pin en LOW
+  delay(1000);                   // esperar un segundo
 }
 
-void Pantalla_Modo1() {
-  u8g2.clearBuffer();
 
-  u8g2.setFont(u8g2_font_ncenB12_tr);
-  u8g2.drawStr(0, 15, "TP FIREBASE");
+*/
 
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0, 30, "Temperatura: ");
-  u8g2.setCursor(80, 30);
-  temp = dht.readTemperature();  // Actualiza la temperatura
-  u8g2.print(temp);
-  u8g2.drawStr(110, 30, "°C");
 
-  u8g2.sendBuffer();
+// LED
+
+
+/*
+const int LED=13;
+void setup()
+{
+pinMode(LED,OUTPUT);
 }
+void loop()
+{
+digitalWrite(LED,HIGH);
+delay(1000);
+digitalWrite(LED,LOW);
+delay(1000);
+}
+
+*/
+
+
+
+
+//buzzer
+
+/*
+
+#define buzzPin  2 // Connect Buzzer on Digital Pin2
+void setup() 
+{ 
+pinMode(buzzPin, OUTPUT); 
+} 
+void loop() 
+{ 
+digitalWrite(buzzPin, HIGH); 
+delayMicroseconds(50); 
+digitalWrite(buzzPin, LOW); 
+delayMicroseconds(50); 
+}
+
+
+*/
+
+
+
+
+//corriente
+
+
+/*
+
+#include <Wire.h>
+#include <Adafruit_INA219.h>
+Adafruit_INA219 ina219;
+ 	float voltage_V = 0,shuntVoltage_mV,busVoltage_V;
+ 	float current_mA = 0;
+ 	float power_mW = 0;
+ 	float energy_Wh=0;
+ 	long time_s=0;
+void setup(void)
+{
+ 	Serial.begin(9600);
+ 	uint32_t currentFrequency;
+ 	ina219.begin();
+ 	Serial.println("Measuring voltage and current with INA219");
+}
+void loop(void)
+{
+ 	getData();
+ 	delay(2000);
+}
+void getData(){
+ 	
+ time_s=millis()/(1000); // convert time to sec
+ busVoltage_V = ina219.getBusVoltage_V();
+ shuntVoltage_mV = ina219.getShuntVoltage_mV();
+ voltage_V = busVoltage_V + (shuntVoltage_mV / 1000);
+ current_mA = ina219.getCurrent_mA();
+ //power_mW = ina219.getPower_mW(); 
+ power_mW=current_mA*voltage_V;
+ energy_Wh=(power_mW*time_s)/3600; 		//energy in watt hour
+ 		
+ 	
+ 	Serial.print("Bus Voltage: 		"); Serial.print(busVoltage_V); Serial.println(" V");
+ 	Serial.print("Shunt Voltage: "); Serial.print(shuntVoltage_mV); Serial.println(" mV");
+ 	Serial.print("Load Voltage: 	"); Serial.print(voltage_V); Serial.println(" V");
+ 	Serial.print("Current: 						"); Serial.print(current_mA); Serial.println(" mA");
+ 	Serial.print("Power: 								"); Serial.print(power_mW); Serial.println(" mW"); 	
+ 	Serial.print("Energy: 							"); Serial.print(energy_Wh); Serial.println(" mWh");
+ 	Serial.println("----------------------------------------------------------------------------");
+}
+*/
+
+
+
+
+
+
+
+ //LDR
+
+
+/*
+ //Código Divisor de tensión con LDR.
+
+void setup(){
+  pinMode(A0,INPUT);                               
+  Serial.begin(9600);               
+} 
+
+void loop(){
+  int valorLDR = analogRead(A0);                
+     
+    if( valorLDR >= 400 ) 
+    {
+      Serial.print(" mayor a 400");
+      Serial.println(valorLDR);
+      delay(500);
+    }
+  
+    else
+    {
+      Serial.println("menor de 400");
+      Serial.println(valorLDR);
+      delay(500);
+    }
+  } 
+
+  */
+
+
+
+  //boton
+
+ /*
+  #define boton  2 // Botón asignado en el pin 2.
+
+void setup() {
+  // Vamos a usar el puerto serie para mostrar el estado del botón.
+  Serial.begin(9600);
+  // Ponemos el pin como una entrada, puesto que vamos a leer
+  // un botón. Habilito la resistencia de PULLUP.
+  pinMode(boton,INPUT_PULLUP);
+}
+
+void loop() {
+  // Cuando la entrada se ponga a 0, el botón "debería" estar
+  // pulsado.
+  if ( digitalRead(boton)==LOW ) {
+    Serial.println("Botón pulsado");
+    delay(100);
+      }
+}
+
+*/
