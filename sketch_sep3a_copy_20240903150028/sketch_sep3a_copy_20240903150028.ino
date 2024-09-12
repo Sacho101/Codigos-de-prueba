@@ -1,5 +1,5 @@
 //codigo pantalla i2c
-/* 
+ 
  #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 
@@ -24,7 +24,7 @@ void loop() {
   lcd.print(millis()/1000);
   lcd.print(" Segundos");
 }
-*/
+
 
 
 
@@ -111,10 +111,10 @@ void loop(){
 
 
 // LED
-
-
 /*
-const int LED=13;
+
+
+#define LED 22
 void setup()
 {
 pinMode(LED,OUTPUT);
@@ -126,6 +126,7 @@ delay(1000);
 digitalWrite(LED,LOW);
 delay(1000);
 }
+
 
 */
 
