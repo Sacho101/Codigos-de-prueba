@@ -1,5 +1,5 @@
-//codigo pantalla i2c
- 
+//codigo pantalla i2c FALTA
+ /*
  #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 
@@ -26,10 +26,11 @@ void loop() {
 }
 
 
+*/
 
 
 
-//AHT10
+//AHT10 FALTA
 
 /*
 //Se declaran las librerías 
@@ -60,7 +61,7 @@ delay(1000);
 
 
 
-// sensor magnetico
+// sensor magnetico FALTA
 
 
 
@@ -135,9 +136,10 @@ delay(1000);
 
 //buzzer
 
-/*
 
-#define buzzPin  2 // Connect Buzzer on Digital Pin2
+ /*
+
+#define buzzPin  18 // Connect Buzzer on Digital Pin2
 void setup() 
 { 
 pinMode(buzzPin, OUTPUT); 
@@ -216,31 +218,21 @@ void getData(){
  //Código Divisor de tensión con LDR.
 
 void setup(){
-  pinMode(A0,INPUT);                               
+  pinMode(35,INPUT_PULLUP);                               
   Serial.begin(9600);               
 } 
 
 void loop(){
-  int valorLDR = analogRead(A0);                
+  int valorLDR = analogRead(35);                
      
-    if( valorLDR >= 400 ) 
-    {
-      Serial.print(" mayor a 400");
-      Serial.println(valorLDR);
-      delay(500);
-    }
   
-    else
-    {
-      Serial.println("menor de 400");
       Serial.println(valorLDR);
-      delay(500);
-    }
+   
   } 
 
-  */
+  
 
-
+*/
 
   //boton
 
